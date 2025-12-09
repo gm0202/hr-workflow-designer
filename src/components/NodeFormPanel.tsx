@@ -1,6 +1,7 @@
 import type { ChangeEvent, ReactNode } from 'react'
+import { nanoid } from 'nanoid/non-secure'
 import { useWorkflowStore } from '../store/workflowStore'
-import type { AutomationNodeData, KeyValue, WorkflowNodeData } from '../types/workflow'
+import type { AutomationNodeData, KeyValue, Priority, Subtask, WorkflowNodeData } from '../types/workflow'
 
 const Field = ({
   label,
@@ -56,6 +57,64 @@ const KeyValueList = ({
       ))}
       <button className="toolbar-btn" onClick={add}>
         + Add
+      </button>
+    </div>
+  )
+}
+
+const SubtaskList = ({
+  items,
+  onChange,
+  title,
+}: {
+  items: Subtask[]
+  onChange: (items: Subtask[]) => void
+  title: string
+}) => {
+  const update = (idx: number, field: keyof Subtask, value: string | boolean) => {
+    const next = [...items]
+    next[idx] = { ...next[idx], [field]: value }
+    onChange(next)
+  }
+  const add = () => onChange([...(items || []), { id: nanoid(6), text: '', completed: false }])
+  const remove = (idx: number) => onChange(items.filter((_, i) => i !== idx))
+
+  const completedCount = items.filter((item) => item.completed).length
+  const totalCount = items.length
+  const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+
+  return (
+    <div className="form-group">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <label>{title}</label>
+        {totalCount > 0 && (
+          <span style={{ fontSize: '12px', color: '#6b7280' }}>
+            {completedCount}/{totalCount} completed ({progress}%)
+          </span>
+        )}
+      </div>
+      {(items ?? []).map((subtask, idx) => (
+        <div key={subtask.id} style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+          <input
+            type="checkbox"
+            checked={subtask.completed}
+            onChange={(e) => update(idx, 'completed', e.target.checked)}
+            style={{ cursor: 'pointer' }}
+          />
+          <input
+            className="input"
+            value={subtask.text}
+            placeholder="Subtask description"
+            onChange={(e) => update(idx, 'text', e.target.value)}
+            style={{ flex: 1, textDecoration: subtask.completed ? 'line-through' : 'none', opacity: subtask.completed ? 0.6 : 1 }}
+          />
+          <button className="toolbar-btn" onClick={() => remove(idx)}>
+            ✕
+          </button>
+        </div>
+      ))}
+      <button className="toolbar-btn" onClick={add}>
+        + Add Subtask
       </button>
     </div>
   )
@@ -159,13 +218,22 @@ export const NodeFormPanel = () => {
               onChange={(e: ChangeEvent<HTMLInputElement>) => update({ title: e.target.value })}
             />
           </Field>
-          <Field label="Description">
-            <textarea
-              className="textarea"
-              value={data.description ?? ''}
-              onChange={(e) => update({ description: e.target.value })}
-            />
+          <Field label="Priority">
+            <select
+              className="select"
+              value={data.priority ?? 'medium'}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => update({ priority: e.target.value as Priority })}
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
           </Field>
+          <SubtaskList
+            title="Subtasks"
+            items={data.subtasks || []}
+            onChange={(items) => update({ subtasks: items })}
+          />
           <div className="grid-two">
             <Field label="Assignee">
               <input
@@ -202,6 +270,17 @@ export const NodeFormPanel = () => {
               onChange={(e: ChangeEvent<HTMLInputElement>) => update({ title: e.target.value })}
             />
           </Field>
+          <Field label="Priority">
+            <select
+              className="select"
+              value={data.priority ?? 'medium'}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => update({ priority: e.target.value as Priority })}
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </Field>
           <div className="grid-two">
             <Field label="Approver role">
               <select
@@ -236,6 +315,17 @@ export const NodeFormPanel = () => {
               value={data.title}
               onChange={(e: ChangeEvent<HTMLInputElement>) => update({ title: e.target.value })}
             />
+          </Field>
+          <Field label="Priority">
+            <select
+              className="select"
+              value={data.priority ?? 'medium'}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => update({ priority: e.target.value as Priority })}
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
           </Field>
           {automations.length === 0 ? (
             <p className="muted">Loading automations...</p>

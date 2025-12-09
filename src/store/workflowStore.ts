@@ -37,17 +37,18 @@ const makeNode = (type: NodeKind, position: { x: number; y: number }): WorkflowN
       data = {
         type: 'task',
         title: 'Task',
-        description: '',
         assignee: '',
         dueDate: '',
         customFields: [],
+        priority: 'medium',
+        subtasks: [],
       }
       break
     case 'approval':
-      data = { type: 'approval', title: 'Approval', role: 'Manager', threshold: 1 }
+      data = { type: 'approval', title: 'Approval', role: 'Manager', threshold: 1, priority: 'medium' }
       break
     case 'automation':
-      data = { type: 'automation', title: 'Automation', actionId: undefined, params: {} }
+      data = { type: 'automation', title: 'Automation', actionId: undefined, params: {}, priority: 'medium' }
       break
     case 'end':
       data = { type: 'end', title: 'End', message: 'Complete', summary: false }

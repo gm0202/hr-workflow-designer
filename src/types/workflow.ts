@@ -10,6 +10,14 @@ export type AutomationAction = {
   params: string[]
 }
 
+export type Priority = 'low' | 'medium' | 'high'
+
+export type Subtask = {
+  id: string
+  text: string
+  completed: boolean
+}
+
 export type BaseNodeData = {
   type: NodeKind
   title: string
@@ -22,22 +30,25 @@ export type StartNodeData = BaseNodeData & {
 
 export type TaskNodeData = BaseNodeData & {
   type: 'task'
-  description?: string
   assignee?: string
   dueDate?: string
   customFields: KeyValue[]
+  priority?: Priority
+  subtasks: Subtask[]
 }
 
 export type ApprovalNodeData = BaseNodeData & {
   type: 'approval'
   role: string
   threshold?: number
+  priority?: Priority
 }
 
 export type AutomationNodeData = BaseNodeData & {
   type: 'automation'
   actionId?: string
   params: Record<string, string>
+  priority?: Priority
 }
 
 export type EndNodeData = BaseNodeData & {

@@ -38,16 +38,58 @@ const NodeCard = (props: { data: WorkflowNode['data']; id: string }) => {
   const hasIncoming = edges.some((e) => e.target === id)
   const progress = data.type === 'start' ? (hasOutgoing ? 50 : 0) : data.type === 'end' ? (hasIncoming ? 100 : 0) : hasOutgoing && hasIncoming ? 75 : hasIncoming ? 50 : 0
 
+  const getPriorityColor = (priority?: string) => {
+    switch (priority) {
+      case 'high': return '#ef4444'
+      case 'medium': return '#f59e0b'
+      case 'low': return '#10b981'
+      default: return '#6b7280'
+    }
+  }
+
   const renderDetails = () => {
     switch (data.type) {
       case 'task':
         const taskData = data as any
+        const taskPriority = taskData.priority || 'medium'
+        const taskPriorityColor = getPriorityColor(taskPriority)
+        const subtasks = taskData.subtasks || []
+        const completedSubtasks = subtasks.filter((st: any) => st.completed).length
+        const totalSubtasks = subtasks.length
+        const taskProgress = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0
+        
         return (
           <>
-            {taskData.description && (
+            <div className="node-detail">
+              <span className="node-detail-label" style={{ color: labelColor }}>Priority:</span>
+              <span className="node-detail-value" style={{ color: taskPriorityColor, fontWeight: 700 }}>
+                {taskPriority.toUpperCase()}
+              </span>
+            </div>
+            {subtasks.length > 0 && (
               <div className="node-detail">
-                <span className="node-detail-label" style={{ color: labelColor }}>Description:</span>
-                <span className="node-detail-value" style={{ color: textColor }}>{taskData.description}</span>
+                <span className="node-detail-label" style={{ color: labelColor }}>Subtasks:</span>
+                <div style={{ marginTop: 4 }}>
+                  {subtasks.slice(0, 3).map((subtask: any) => (
+                    <div key={subtask.id} style={{ fontSize: '11px', display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+                      <span style={{ color: subtask.completed ? '#10b981' : '#6b7280' }}>
+                        {subtask.completed ? '✓' : '○'}
+                      </span>
+                      <span style={{ 
+                        textDecoration: subtask.completed ? 'line-through' : 'none',
+                        opacity: subtask.completed ? 0.6 : 1,
+                        color: textColor
+                      }}>
+                        {subtask.text || 'Untitled subtask'}
+                      </span>
+                    </div>
+                  ))}
+                  {subtasks.length > 3 && (
+                    <div style={{ fontSize: '11px', color: '#6b7280', marginTop: 2 }}>
+                      +{subtasks.length - 3} more
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             {taskData.assignee && (
@@ -62,21 +104,33 @@ const NodeCard = (props: { data: WorkflowNode['data']; id: string }) => {
                 <span className="node-detail-value" style={{ color: textColor }}>{taskData.dueDate}</span>
               </div>
             )}
-            <div className="node-progress">
-              <div className="node-progress-bar">
-                <div 
-                  className="node-progress-fill" 
-                  style={{ width: `${progress}%`, backgroundColor: colors.accent }}
-                />
+            {totalSubtasks > 0 && (
+              <div className="node-progress">
+                <div className="node-progress-bar">
+                  <div 
+                    className="node-progress-fill" 
+                    style={{ width: `${taskProgress}%`, backgroundColor: colors.accent }}
+                  />
+                </div>
+                <span className="node-progress-text" style={{ color: textColor }}>
+                  {completedSubtasks}/{totalSubtasks} ({taskProgress}%)
+                </span>
               </div>
-              <span className="node-progress-text" style={{ color: textColor }}>{progress}%</span>
-            </div>
+            )}
           </>
         )
       case 'approval':
         const approvalData = data as any
+        const approvalPriority = approvalData.priority || 'medium'
+        const approvalPriorityColor = getPriorityColor(approvalPriority)
         return (
           <>
+            <div className="node-detail">
+              <span className="node-detail-label" style={{ color: labelColor }}>Priority:</span>
+              <span className="node-detail-value" style={{ color: approvalPriorityColor, fontWeight: 700 }}>
+                {approvalPriority.toUpperCase()}
+              </span>
+            </div>
             {approvalData.role && (
               <div className="node-detail">
                 <span className="node-detail-label" style={{ color: labelColor }}>Role:</span>
@@ -102,8 +156,16 @@ const NodeCard = (props: { data: WorkflowNode['data']; id: string }) => {
         )
       case 'automation':
         const automationData = data as any
+        const automationPriority = automationData.priority || 'medium'
+        const automationPriorityColor = getPriorityColor(automationPriority)
         return (
           <>
+            <div className="node-detail">
+              <span className="node-detail-label" style={{ color: labelColor }}>Priority:</span>
+              <span className="node-detail-value" style={{ color: automationPriorityColor, fontWeight: 700 }}>
+                {automationPriority.toUpperCase()}
+              </span>
+            </div>
             {automationData.actionId && (
               <div className="node-detail">
                 <span className="node-detail-label" style={{ color: labelColor }}>Action:</span>
@@ -131,15 +193,6 @@ const NodeCard = (props: { data: WorkflowNode['data']; id: string }) => {
                 <span className="node-detail-value" style={{ color: textColor }}>{endData.message}</span>
               </div>
             )}
-            <div className="node-progress">
-              <div className="node-progress-bar">
-                <div 
-                  className="node-progress-fill" 
-                  style={{ width: `${progress}%`, backgroundColor: colors.accent }}
-                />
-              </div>
-              <span className="node-progress-text" style={{ color: textColor }}>{progress}%</span>
-            </div>
           </>
         )
       case 'start':
@@ -152,15 +205,6 @@ const NodeCard = (props: { data: WorkflowNode['data']; id: string }) => {
                 <span className="node-detail-value" style={{ color: textColor }}>{startData.metadata.length} items</span>
               </div>
             )}
-            <div className="node-progress">
-              <div className="node-progress-bar">
-                <div 
-                  className="node-progress-fill" 
-                  style={{ width: `${progress}%`, backgroundColor: colors.accent }}
-                />
-              </div>
-              <span className="node-progress-text" style={{ color: textColor }}>{progress}%</span>
-            </div>
           </>
         )
       default:
