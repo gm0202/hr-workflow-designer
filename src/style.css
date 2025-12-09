@@ -207,6 +207,18 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.right-rail > .panel:first-child {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.right-rail > .panel:last-child {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .panel h2 {
@@ -223,8 +235,47 @@ body {
 
 .right-rail {
   display: grid;
-  grid-template-rows: 1fr 220px;
-  gap: 12px;
+  grid-template-rows: 1fr auto 220px;
+  gap: 0;
+  position: relative;
+}
+
+.resize-handle {
+  height: 8px;
+  background: transparent;
+  cursor: row-resize;
+  position: relative;
+  margin: 4px 0;
+  transition: background 0.2s ease;
+}
+
+.resize-handle:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.resize-handle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 4px;
+  background: #cbd5e1;
+  border-radius: 2px;
+  transition: background 0.2s ease;
+}
+
+.resize-handle:hover::before {
+  background: #3b82f6;
+}
+
+.theme-dark .resize-handle::before {
+  background: #475569;
+}
+
+.theme-dark .resize-handle:hover::before {
+  background: #60a5fa;
 }
 
 .node-palette {

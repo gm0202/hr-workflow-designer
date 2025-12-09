@@ -13,6 +13,8 @@ const App = () => {
   const [showPreview, setShowPreview] = useState(false)
   const [activeTab, setActiveTab] = useState<'design' | 'config' | 'test'>('design')
   const [darkMode, setDarkMode] = useState(true)
+  const [sandboxHeight, setSandboxHeight] = useState(220) // Initial height in pixels
+  const [isResizing, setIsResizing] = useState(false)
   const setAutomations = useWorkflowStore((s) => s.setAutomations)
   const nodes = useWorkflowStore((s) => s.nodes)
   const edges = useWorkflowStore((s) => s.edges)
@@ -32,6 +34,42 @@ const App = () => {
       document.body.classList.remove('theme-dark')
     }
   }, [darkMode])
+
+  // Handle resize
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return
+      const rightRail = document.querySelector('.right-rail') as HTMLElement
+      if (!rightRail) return
+      
+      const rect = rightRail.getBoundingClientRect()
+      const newHeight = rect.bottom - e.clientY
+      const minHeight = 150
+      const maxHeight = rect.height - 200 // Leave at least 200px for node form
+      
+      if (newHeight >= minHeight && newHeight <= maxHeight) {
+        setSandboxHeight(newHeight)
+      }
+    }
+
+    const handleMouseUp = () => {
+      setIsResizing(false)
+    }
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = 'row-resize'
+      document.body.style.userSelect = 'none'
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+    }
+  }, [isResizing])
 
   return (
     <div className="app-shell">
@@ -93,8 +131,15 @@ const App = () => {
           </div>
           <Canvas />
         </div>
-        <div className="right-rail">
+        <div className="right-rail" style={{ gridTemplateRows: `1fr auto ${sandboxHeight}px` }}>
           <NodeFormPanel />
+          <div
+            className="resize-handle"
+            onMouseDown={(e) => {
+              e.preventDefault()
+              setIsResizing(true)
+            }}
+          />
           <SandboxPanel />
         </div>
       </main>
