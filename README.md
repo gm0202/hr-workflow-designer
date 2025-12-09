@@ -21,6 +21,8 @@ This is the fully functional prototype where you can:
 - Test workflow execution
 - Export workflows as JSON
 
+> **Note**: MSW (Mock Service Worker) only works in development mode. In the live demo (production), the app automatically falls back to mock data when API calls fail, ensuring all features work seamlessly without a backend.
+
 ---
 
 ## 📋 Table of Contents
@@ -185,6 +187,7 @@ Make sure you have:
    - Navigate to `http://localhost:5173/`
    - The MSW service worker will automatically register in development mode
    - You should see the workflow designer interface! 🎉
+   - **Note**: MSW only works in development. In production builds, the app uses mock data fallback automatically.
 
 ### Quick Start Guide
 
@@ -234,6 +237,12 @@ Make sure you have:
 - ✅ Works in both browser and Node.js
 - ✅ Easy to switch to real APIs later
 - ✅ Great developer experience
+
+**Important Note**: 
+- MSW **only works in development mode** (when running `npm run dev`)
+- In **production** (like the live demo), MSW service workers are not available
+- To ensure the app works in production, we've implemented **automatic fallback to mock data** when API calls fail
+- The fallback uses the same logic as MSW handlers, so functionality is identical in both environments
 
 **Alternative considered**: JSON Server, but MSW is more flexible and doesn't require a separate process.
 
@@ -325,7 +334,8 @@ We used **plain CSS** instead of CSS-in-JS because:
 
 - [x] TypeScript for type safety
 - [x] Zustand for state management
-- [x] MSW for API mocking
+- [x] MSW for API mocking (development only)
+- [x] **Mock data fallback for production** - automatic fallback when API calls fail
 - [x] Proper error handling
 - [x] Code organization and structure
 - [x] Build configuration for production
