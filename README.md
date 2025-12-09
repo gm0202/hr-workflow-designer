@@ -400,4 +400,4 @@ This project is a prototype/demo. Feel free to use it as a reference or starting
 
 **Built with ❤️ using React, React Flow, and TypeScript**
 
-*Last updated: 2024*
+*Last updated: 2025*
