@@ -9,16 +9,13 @@ const mockAutomations: AutomationAction[] = [
 ]
 
 export async function fetchAutomations(): Promise<AutomationAction[]> {
-  // In production, MSW is not available, so use mock data directly
-  if (import.meta.env.PROD) {
-    return Promise.resolve(mockAutomations)
-  }
-  
-  // In development, try MSW first, fallback to mock data if it fails
+  // Try API call first (MSW will intercept in both dev and production)
+  // Fallback to mock data if API call fails
   try {
     return await http<AutomationAction[]>('/automations', { method: 'GET' })
   } catch (error) {
-    // Fallback to mock data if API call fails
+    // Fallback to mock data if API call fails (e.g., MSW not available)
+    console.warn('API call failed, using mock data fallback:', error)
     return Promise.resolve(mockAutomations)
   }
 }

@@ -21,7 +21,7 @@ This is the fully functional prototype where you can:
 - Test workflow execution
 - Export workflows as JSON
 
-> **Note**: MSW (Mock Service Worker) only works in development mode. In the live demo (production), the app automatically falls back to mock data when API calls fail, ensuring all features work seamlessly without a backend.
+> **Note**: MSW (Mock Service Worker) is enabled in production too! The service worker intercepts API calls in both development and production. If MSW fails to start, the app automatically falls back to mock data, ensuring all features work seamlessly.
 
 ---
 
@@ -185,9 +185,9 @@ Make sure you have:
 
 4. **Open your browser**
    - Navigate to `http://localhost:5173/`
-   - The MSW service worker will automatically register in development mode
+   - The MSW service worker will automatically register (works in both dev and production)
    - You should see the workflow designer interface! 🎉
-   - **Note**: MSW only works in development. In production builds, the app uses mock data fallback automatically.
+   - If MSW fails to start, the app will automatically use mock data fallback
 
 ### Quick Start Guide
 
@@ -239,10 +239,10 @@ Make sure you have:
 - ✅ Great developer experience
 
 **Important Note**: 
-- MSW **only works in development mode** (when running `npm run dev`)
-- In **production** (like the live demo), MSW service workers are not available
-- To ensure the app works in production, we've implemented **automatic fallback to mock data** when API calls fail
-- The fallback uses the same logic as MSW handlers, so functionality is identical in both environments
+- MSW is enabled in **both development and production** modes
+- The service worker (`mockServiceWorker.js`) intercepts API calls in both environments
+- If MSW fails to start or API calls fail, the app automatically falls back to mock data
+- The fallback uses the same logic as MSW handlers, ensuring consistent functionality
 
 **Alternative considered**: JSON Server, but MSW is more flexible and doesn't require a separate process.
 
@@ -334,8 +334,8 @@ We used **plain CSS** instead of CSS-in-JS because:
 
 - [x] TypeScript for type safety
 - [x] Zustand for state management
-- [x] MSW for API mocking (development only)
-- [x] **Mock data fallback for production** - automatic fallback when API calls fail
+- [x] MSW for API mocking (enabled in both development and production)
+- [x] **Mock data fallback** - automatic fallback if MSW fails or API calls fail
 - [x] Proper error handling
 - [x] Code organization and structure
 - [x] Build configuration for production
