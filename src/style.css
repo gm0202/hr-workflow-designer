@@ -526,7 +526,13 @@ body {
 
 .react-flow__edge.selected .react-flow__edge-path {
   stroke: #1d4ed8 !important;
-  stroke-width: 5px !important;
+  stroke-width: 6px !important;
+  filter: drop-shadow(0 2px 8px rgba(29, 78, 216, 0.7));
+}
+
+.react-flow__edge.selected .react-flow__arrowhead {
+  fill: #1d4ed8 !important;
+  stroke: #1d4ed8 !important;
 }
 
 .react-flow__edge:hover .react-flow__edge-path {
@@ -576,6 +582,13 @@ body {
 }
 
 .theme-dark .react-flow__edge.selected .react-flow__edge-path {
+  stroke: #3b82f6 !important;
+  stroke-width: 6px !important;
+  filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.7));
+}
+
+.theme-dark .react-flow__edge.selected .react-flow__arrowhead {
+  fill: #3b82f6 !important;
   stroke: #3b82f6 !important;
 }
 

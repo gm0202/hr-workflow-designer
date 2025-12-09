@@ -13,6 +13,7 @@ type WorkflowState = {
   nodes: WorkflowNode[]
   edges: WorkflowEdge[]
   selectedNodeId?: string
+  selectedEdgeId?: string
   automations: AutomationAction[]
   validation: ValidationIssue[]
   simulationLog: string[]
@@ -22,6 +23,8 @@ type WorkflowState = {
   setEdges: (edges: WorkflowEdge[]) => void
   setNodes: (nodes: WorkflowNode[]) => void
   selectNode: (id?: string) => void
+  selectEdge: (id?: string) => void
+  deleteEdge: (id: string) => void
   setValidation: (issues: ValidationIssue[]) => void
   pushLog: (line: string) => void
   resetLog: () => void
@@ -72,6 +75,7 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
   nodes: initialNodes,
   edges: initialEdges,
   selectedNodeId: undefined,
+  selectedEdgeId: undefined,
   automations: [],
   validation: [],
   simulationLog: [],
@@ -89,7 +93,13 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
     })),
   setEdges: (edges) => set({ edges }),
   setNodes: (nodes) => set({ nodes }),
-  selectNode: (id) => set({ selectedNodeId: id }),
+  selectNode: (id) => set({ selectedNodeId: id, selectedEdgeId: undefined }),
+  selectEdge: (id) => set({ selectedEdgeId: id, selectedNodeId: undefined }),
+  deleteEdge: (id) =>
+    set((state) => ({
+      edges: state.edges.filter((edge) => edge.id !== id),
+      selectedEdgeId: undefined,
+    })),
   setValidation: (issues) => set({ validation: issues }),
   pushLog: (line) => set((state) => ({ simulationLog: [...state.simulationLog, line] })),
   resetLog: () => set({ simulationLog: [] }),

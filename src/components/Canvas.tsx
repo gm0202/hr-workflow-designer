@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import ReactFlow, {
   Background,
   Controls,
@@ -12,6 +12,7 @@ import ReactFlow, {
   type Connection,
   type EdgeChange,
   type NodeChange,
+  type Edge,
   MarkerType,
   useReactFlow,
 } from 'reactflow'
@@ -280,9 +281,12 @@ const CanvasInner = () => {
   const nodes = useWorkflowStore((s) => s.nodes)
   const edges = useWorkflowStore((s) => s.edges)
   const selectedNodeId = useWorkflowStore((s) => s.selectedNodeId)
+  const selectedEdgeId = useWorkflowStore((s) => s.selectedEdgeId)
   const setNodes = useWorkflowStore((s) => s.setNodes)
   const setEdges = useWorkflowStore((s) => s.setEdges)
   const selectNode = useWorkflowStore((s) => s.selectNode)
+  const selectEdge = useWorkflowStore((s) => s.selectEdge)
+  const deleteEdge = useWorkflowStore((s) => s.deleteEdge)
   const addNode = useWorkflowStore((s) => s.addNode)
   const validation = useWorkflowStore((s) => s.validation)
 
@@ -318,8 +322,17 @@ const CanvasInner = () => {
   )
 
   const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) => setEdges(applyEdgeChanges(changes, edges)),
-    [edges, setEdges],
+    (changes: EdgeChange[]) => {
+      const newEdges = applyEdgeChanges(changes, edges)
+      setEdges(newEdges)
+      
+      // Clear selected edge if it was deleted
+      const deletedEdgeId = changes.find((change) => change.type === 'remove')?.id
+      if (deletedEdgeId === selectedEdgeId) {
+        selectEdge(undefined)
+      }
+    },
+    [edges, setEdges, selectedEdgeId, selectEdge],
   )
 
   const onConnect = useCallback(
@@ -351,24 +364,72 @@ const CanvasInner = () => {
     [selectNode],
   )
 
+  const onEdgeClick = useCallback(
+    (_: React.MouseEvent, edge: Edge) => {
+      selectEdge(edge.id)
+    },
+    [selectEdge],
+  )
+
+  // Handle Delete key to remove selected edge
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.key === 'Delete' || event.key === 'Backspace') && selectedEdgeId) {
+        event.preventDefault()
+        deleteEdge(selectedEdgeId)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedEdgeId, deleteEdge])
+
+  // Update edges to show selected state
+  const edgesWithSelection = useMemo(
+    () =>
+      edges.map((edge) => ({
+        ...edge,
+        selected: edge.id === selectedEdgeId,
+      })),
+    [edges, selectedEdgeId],
+  )
+
   return (
     <div className="panel canvas-wrapper">
       <div className="canvas-toolbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
           <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 500 }}>
             💡 Drag from the bottom handle of a node to the top handle of another to connect them
+            {selectedEdgeId && ' • Click an arrow to select it, then press Delete to remove'}
           </span>
         </div>
+        {selectedEdgeId && (
+          <button
+            className="toolbar-btn"
+            onClick={() => {
+              deleteEdge(selectedEdgeId)
+            }}
+            style={{ background: '#ef4444', color: 'white', borderColor: '#ef4444' }}
+          >
+            Delete Connection
+          </button>
+        )}
         <button
           className="toolbar-btn"
           onClick={() => {
-            if (!selectedNodeId) {
+            if (!selectedNodeId && !selectedEdgeId) {
               selectNode(undefined)
+              selectEdge(undefined)
               return
             }
-            setNodes(nodes.filter((n) => n.id !== selectedNodeId))
-            setEdges(edges.filter((e) => e.source !== selectedNodeId && e.target !== selectedNodeId))
-            selectNode(undefined)
+            if (selectedNodeId) {
+              setNodes(nodes.filter((n) => n.id !== selectedNodeId))
+              setEdges(edges.filter((e) => e.source !== selectedNodeId && e.target !== selectedNodeId))
+              selectNode(undefined)
+            }
+            if (selectedEdgeId) {
+              deleteEdge(selectedEdgeId)
+            }
           }}
         >
           Clear selection
@@ -401,7 +462,7 @@ const CanvasInner = () => {
           nodes={nodes.map((n: WorkflowNode) =>
             hasError.has(n.id) ? { ...n, style: { borderColor: '#ef4444' } } : n,
           )}
-          edges={edges}
+          edges={edgesWithSelection}
           nodeTypes={memoNodeTypes}
           defaultEdgeOptions={defaultEdgeOptions}
           onNodesChange={onNodesChange}
@@ -410,6 +471,8 @@ const CanvasInner = () => {
           onDrop={onDrop}
           onDragOver={onDragOver}
           onNodeClick={onNodeClick}
+          onEdgeClick={onEdgeClick}
+          deleteKeyCode={['Delete', 'Backspace']}
           fitView
         >
           <MiniMap />
