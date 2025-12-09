@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Eye, Save, Sparkles, User, Check, Zap, Flag } from 'lucide-react'
 import { Canvas } from './components/Canvas'
 import { NodeFormPanel } from './components/NodeFormPanel'
@@ -6,7 +6,8 @@ import { SandboxPanel } from './components/SandboxPanel'
 import { Sidebar } from './components/Sidebar'
 import { useWorkflowStore } from './store/workflowStore'
 import { fetchAutomations } from './api/automations'
-import type { WorkflowNode } from './types/workflow'
+import { traverseWorkflow } from './utils/workflowTraversal'
+import type { WorkflowNode, WorkflowEdge } from './types/workflow'
 
 const App = () => {
   const [showPreview, setShowPreview] = useState(false)
@@ -98,7 +99,7 @@ const App = () => {
         </div>
       </main>
 
-      {showPreview && <PreviewModal nodes={nodes} onClose={() => setShowPreview(false)} />}
+      {showPreview && <PreviewModal nodes={nodes} edges={edges} onClose={() => setShowPreview(false)} />}
     </div>
   )
 }
@@ -107,15 +108,17 @@ export default App
 
 type PreviewModalProps = {
   nodes: WorkflowNode[]
+  edges: WorkflowEdge[]
   onClose: () => void
 }
 
 const nodeLabel = (node: WorkflowNode) => `${node.data.title} (${node.data.type})`
 
-const PreviewModal = ({ nodes, onClose }: PreviewModalProps) => {
+const PreviewModal = ({ nodes, edges, onClose }: PreviewModalProps) => {
+  // Order nodes by following edge connections (workflow execution order)
   const ordered = useMemo(
-    () => [...nodes].sort((a, b) => (a.position.y ?? 0) - (b.position.y ?? 0)),
-    [nodes],
+    () => traverseWorkflow(nodes, edges),
+    [nodes, edges],
   )
 
   const iconFor = (type: WorkflowNode['data']['type']) => {
@@ -176,26 +179,41 @@ const PreviewModal = ({ nodes, onClose }: PreviewModalProps) => {
           </button>
         </div>
         <p className="muted" style={{ marginTop: 6 }}>
-          Ordered top-to-bottom from the canvas.
+          Execution order following arrow connections (Start → Task → Approval → End).
         </p>
         <div className="preview-list">
-          {ordered.map((n) => {
+          {ordered.map((n, index) => {
             const Icon = iconFor(n.data.type)
             const color = colorFor(n.data.type)
             const status = statusFor(n.data.type)
+            const isLast = index === ordered.length - 1
+            
             return (
-              <div key={n.id} className="preview-card">
-                <div className="preview-icon" style={{ background: `${color}1a`, borderColor: color }}>
-                  <Icon size={18} color={color} />
+              <React.Fragment key={n.id}>
+                <div className="preview-card">
+                  <div className="preview-icon" style={{ background: `${color}1a`, borderColor: color }}>
+                    <Icon size={18} color={color} />
+                  </div>
+                  <div className="preview-body">
+                    <div className="preview-title">{nodeLabel(n)}</div>
+                    <div className="preview-sub">Step {index + 1} of {ordered.length}</div>
+                  </div>
+                  <div className="status-pill" style={{ color: color, borderColor: color }}>
+                    {status.label}
+                  </div>
                 </div>
-                <div className="preview-body">
-                  <div className="preview-title">{nodeLabel(n)}</div>
-                  <div className="preview-sub">{status.muted}</div>
-                </div>
-                <div className="status-pill" style={{ color: color, borderColor: color }}>
-                  {status.label}
-                </div>
-              </div>
+                {!isLast && (
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    padding: '4px 0',
+                    color: '#3b82f6',
+                    fontSize: '20px'
+                  }}>
+                    ↓
+                  </div>
+                )}
+              </React.Fragment>
             )
           })}
         </div>
