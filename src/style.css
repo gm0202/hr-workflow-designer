@@ -266,10 +266,23 @@ body {
 .canvas-toolbar {
   position: absolute;
   top: 12px;
+  left: 12px;
   right: 12px;
   display: flex;
   gap: 8px;
+  align-items: center;
   z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.theme-dark .canvas-toolbar {
+  background: rgba(31, 41, 55, 0.95);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .toolbar-btn {
@@ -506,8 +519,78 @@ body {
 }
 
 .react-flow__edge-path {
-  stroke: #475569 !important;
-  stroke-width: 2px;
+  stroke: #2563eb !important;
+  stroke-width: 4px !important;
+  filter: drop-shadow(0 2px 6px rgba(37, 99, 235, 0.5));
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #1d4ed8 !important;
+  stroke-width: 5px !important;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: #1d4ed8 !important;
+  stroke-width: 5px !important;
+}
+
+.react-flow__edge-text {
+  font-size: 12px;
+  font-weight: 600;
+  fill: #1e40af;
+}
+
+.react-flow__edge-textbg {
+  fill: white;
+  stroke: white;
+  stroke-width: 3px;
+}
+
+.react-flow__arrowhead {
+  fill: #2563eb !important;
+  stroke: #2563eb !important;
+  stroke-width: 2px !important;
+}
+
+.react-flow__connection-line {
+  stroke: #2563eb !important;
+  stroke-width: 4px !important;
+}
+
+.react-flow__handle {
+  background: #2563eb !important;
+  border: 3px solid #1e40af !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.react-flow__handle:hover {
+  background: #1d4ed8 !important;
+  border-color: #1e3a8a !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.theme-dark .react-flow__edge-path {
+  stroke: #60a5fa !important;
+}
+
+.theme-dark .react-flow__edge.selected .react-flow__edge-path {
+  stroke: #3b82f6 !important;
+}
+
+.theme-dark .react-flow__edge:hover .react-flow__edge-path {
+  stroke: #3b82f6 !important;
+}
+
+.theme-dark .react-flow__arrowhead {
+  fill: #60a5fa !important;
+  stroke: #60a5fa !important;
+}
+
+.theme-dark .react-flow__handle {
+  background: #60a5fa !important;
+  border-color: #3b82f6 !important;
 }
 
 .tab-bar {

@@ -4,6 +4,8 @@ import ReactFlow, {
   Controls,
   MiniMap,
   ReactFlowProvider,
+  Handle,
+  Position,
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
@@ -218,9 +220,26 @@ const NodeCard = (props: { data: WorkflowNode['data']; id: string }) => {
       style={{ 
         background: colors.bg, 
         borderColor: colors.border,
-        color: colors.text
+        color: colors.text,
+        position: 'relative'
       }}
     >
+      {/* Target handle (top) - for incoming connections */}
+      {data.type !== 'start' && (
+        <Handle
+          type="target"
+          position={Position.Top}
+          style={{
+            background: colors.accent,
+            width: 14,
+            height: 14,
+            border: `3px solid ${colors.border}`,
+            borderRadius: '50%',
+            top: -7,
+          }}
+        />
+      )}
+      
       <div className="node-pill" style={{ color: colors.accent, backgroundColor: `${colors.accent}20`, fontWeight: 700 }}>
         {data.type.toUpperCase()}
       </div>
@@ -228,6 +247,22 @@ const NodeCard = (props: { data: WorkflowNode['data']; id: string }) => {
       <div className="node-details">
         {renderDetails()}
       </div>
+      
+      {/* Source handle (bottom) - for outgoing connections */}
+      {data.type !== 'end' && (
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          style={{
+            background: colors.accent,
+            width: 14,
+            height: 14,
+            border: `3px solid ${colors.border}`,
+            borderRadius: '50%',
+            bottom: -7,
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -260,8 +295,19 @@ const CanvasInner = () => {
 
   const defaultEdgeOptions = useMemo(
     () => ({
-      style: { stroke: '#475569', strokeWidth: 2 },
-      markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#475569' },
+      type: 'smoothstep',
+      animated: true,
+      style: { 
+        stroke: '#2563eb', 
+        strokeWidth: 4,
+        filter: 'drop-shadow(0 2px 6px rgba(37, 99, 235, 0.5))'
+      },
+      markerEnd: { 
+        type: MarkerType.ArrowClosed, 
+        width: 32, 
+        height: 32, 
+        color: '#2563eb'
+      },
     }),
     [],
   )
@@ -308,6 +354,11 @@ const CanvasInner = () => {
   return (
     <div className="panel canvas-wrapper">
       <div className="canvas-toolbar">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+          <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 500 }}>
+            💡 Drag from the bottom handle of a node to the top handle of another to connect them
+          </span>
+        </div>
         <button
           className="toolbar-btn"
           onClick={() => {
@@ -333,6 +384,10 @@ const CanvasInner = () => {
                 id: `auto-${n.id}-${target.id}`,
                 source: n.id,
                 target: target.id,
+                type: 'smoothstep',
+                animated: true,
+                style: { stroke: '#2563eb', strokeWidth: 4 },
+                markerEnd: { type: MarkerType.ArrowClosed, width: 32, height: 32, color: '#2563eb' },
               }
             })
             setEdges(chainEdges)
