@@ -8,6 +8,21 @@
 
 ---
 
+## 🌐 Live Demo
+
+**Try it out now!** The working module is deployed and available at:
+
+🔗 **[https://hr-workflow-designer-lsvht0u1d-gaurangs-projects-1eb2dfac.vercel.app/](https://hr-workflow-designer-lsvht0u1d-gaurangs-projects-1eb2dfac.vercel.app/)**
+
+This is the fully functional prototype where you can:
+- Create workflows by dragging and dropping nodes
+- Connect nodes with arrows to define the flow
+- Configure node properties and priorities
+- Test workflow execution
+- Export workflows as JSON
+
+---
+
 ## 📋 Table of Contents
 
 - [✨ What is This?](#-what-is-this)
@@ -25,8 +40,10 @@ Imagine you're an HR manager who needs to design an employee onboarding process.
 
 This is a **prototype workflow designer** built with React and React Flow that lets you:
 - 🎨 Create visual workflows by dragging nodes onto a canvas
-- ⚙️ Configure each step (tasks, approvals, automations)
-- 🧪 Test your workflow before deploying it
+- 🔗 Connect nodes with arrows to define the execution flow
+- ⚙️ Configure each step (tasks with subtasks, approvals, automations)
+- 🎯 Set priorities and track progress
+- 🧪 Test your workflow - execution follows arrow connections
 - 📊 See execution previews and progress
 
 ---
@@ -91,7 +108,8 @@ hr-workflow/
 │   │   ├── handlers.ts
 │   │   └── browser.ts
 │   ├── utils/
-│   │   └── validation.ts    # Workflow validation logic
+│   │   ├── validation.ts    # Workflow validation logic
+│   │   └── workflowTraversal.ts # Graph traversal for execution order
 │   ├── App.tsx              # Main app component
 │   ├── main.tsx             # Entry point
 │   └── style.css            # Global styles
@@ -111,22 +129,26 @@ Zustand Store (addNode)
     ↓
 React Flow Renders Node
     ↓
-User Clicks Node
+User Connects Nodes (Drag Handle to Handle)
     ↓
-Store Updates (selectNode)
+Store Updates (addEdge)
     ↓
-NodeFormPanel Shows Form
+User Clicks "Test Workflow"
     ↓
-User Edits Properties
+Workflow Traversal (follows arrow connections)
     ↓
-Store Updates (updateNodeData)
+Simulation API (executes in connection order)
     ↓
-Canvas Re-renders with New Data
+Results Displayed in Sandbox Panel
 ```
+
+**Key Point**: Workflow execution order is determined by **arrow connections**, not node positions. The `workflowTraversal.ts` utility uses BFS (Breadth-First Search) to traverse the graph starting from the Start node, following edges to determine execution sequence.
 
 ---
 
 ## 🚀 How to Run
+
+> 💡 **Quick Access**: You can try the live demo at [https://hr-workflow-designer-lsvht0u1d-gaurangs-projects-1eb2dfac.vercel.app/](https://hr-workflow-designer-lsvht0u1d-gaurangs-projects-1eb2dfac.vercel.app/) without any setup!
 
 ### Prerequisites
 
@@ -167,10 +189,11 @@ Make sure you have:
 ### Quick Start Guide
 
 1. **Add Nodes**: Drag nodes from the left sidebar onto the canvas
-2. **Connect Nodes**: Click and drag from one node's handle to another
-3. **Configure Nodes**: Click a node to edit its properties in the right panel
-4. **Test Workflow**: Click "Test Workflow" in the sidebar to simulate execution
-5. **Export**: Click "Export JSON" to save your workflow
+2. **Connect Nodes**: Drag from the **bottom handle** (blue circle) of a node to the **top handle** of another node
+3. **Delete Connections**: Click on an arrow to select it, then press `Delete` or click "Delete Connection"
+4. **Configure Nodes**: Click a node to edit its properties (priority, subtasks, assignee, etc.)
+5. **Test Workflow**: Click "Test Workflow" - execution follows your arrow connections!
+6. **Export**: Click "Export JSON" to save your workflow
 
 ### Available Scripts
 
@@ -247,8 +270,10 @@ We used **plain CSS** instead of CSS-in-JS because:
 
 - [x] **Interactive Canvas**
   - React Flow canvas with pan, zoom, and minimap
-  - Connect nodes by dragging between handles
+  - Connect nodes by dragging between handles (source/target handles)
   - Visual feedback on selection and errors
+  - Delete connections by selecting edges and pressing Delete
+  - Animated arrows showing workflow flow direction
 
 - [x] **Node Configuration**
   - Type-specific forms for each node type
@@ -264,6 +289,8 @@ We used **plain CSS** instead of CSS-in-JS because:
   - Mock API integration with MSW
   - Step-by-step execution logs
   - Progress tracking
+  - **Connection-based execution**: Workflow follows arrow connections (not just node order)
+  - Graph traversal algorithm determines execution path
 
 - [x] **Export Functionality**
   - Export workflow as JSON
@@ -274,19 +301,25 @@ We used **plain CSS** instead of CSS-in-JS because:
   - Consistent styling across all components
 
 - [x] **Node Information Display**
-  - Shows description, assignee, due date in nodes
-  - Progress bars with percentages
-  - Clean, readable typography
+  - Shows assignee, due date in nodes
+  - **Subtask to-do lists** for task nodes with progress tracking
+  - **Priority settings** (Low/Medium/High) for task, approval, and automation nodes
+  - Progress bars calculated from subtask completion
+  - Clean, readable typography with black text for visibility
 
 ### UI/UX Features 🎨
 
 - [x] Modern, clean interface
 - [x] Responsive layout
 - [x] Visual feedback on interactions
-- [x] Preview modal for workflow execution
+- [x] Preview modal for workflow execution (shows connection-based order)
 - [x] Stats bar showing workflow metrics
 - [x] Connect All button for quick linking
 - [x] Delete selected node functionality
+- [x] **Edge deletion**: Select arrows and delete connections
+- [x] **Connection handles**: Visual handles on nodes for easy connecting
+- [x] **Enhanced arrows**: Large, visible, animated arrows showing flow
+- [x] Dark mode toggle in header
 
 ### Technical Implementation 🔧
 
