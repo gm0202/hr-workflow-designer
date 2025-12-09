@@ -48,14 +48,19 @@ function mockSimulate(payload: SimulationRequest): SimulationResponse {
 }
 
 export async function simulateWorkflow(payload: SimulationRequest): Promise<SimulationResponse> {
+  // In production, MSW is not available, so use mock simulation directly
+  if (import.meta.env.PROD) {
+    return Promise.resolve(mockSimulate(payload))
+  }
+  
+  // In development, try MSW first, fallback to mock simulation if it fails
   try {
     return await http<SimulationResponse>('/simulate', {
       method: 'POST',
       body: JSON.stringify(payload),
     })
   } catch (error) {
-    // Fallback to mock simulation if API call fails (e.g., in production)
-    console.warn('API call failed, using mock simulation:', error)
+    // Fallback to mock simulation if API call fails
     return Promise.resolve(mockSimulate(payload))
   }
 }
